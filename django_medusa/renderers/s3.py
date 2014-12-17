@@ -66,7 +66,10 @@ def _s3_render_path(args):
         bucket = _get_bucket()
 
     # Render the view
-    resp = client.get(path)
+    if hasattr(settings, 'MEDUSA_HTTP_HOST'):
+        resp = client.get(path, HTTP_HOST=settings.MEDUSA_HTTP_HOST)
+    else:
+        resp = client.get(path)
     if resp.status_code != 200:
         raise Exception
 

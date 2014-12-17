@@ -34,7 +34,10 @@ def _disk_render_path(args):
             os.makedirs(output_dir)
         outpath = os.path.join(DEPLOY_DIR, realpath)
 
-        resp = client.get(path)
+        if hasattr(settings, 'MEDUSA_HTTP_HOST'):
+            resp = client.get(path, HTTP_HOST=settings.MEDUSA_HTTP_HOST)
+        else:
+            resp = client.get(path)
         if resp.status_code != 200:
             raise Exception
         if needs_ext:
