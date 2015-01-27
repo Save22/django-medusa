@@ -34,12 +34,19 @@ def _disk_render_path(args):
             os.makedirs(output_dir)
         outpath = os.path.join(DEPLOY_DIR, realpath)
 
+    try:
+        print("START")
         if hasattr(settings, 'MEDUSA_HTTP_HOST'):
+            print("RENDER VIEW 1")
             resp = client.get(path, HTTP_HOST=settings.MEDUSA_HTTP_HOST)
+            print("RENDER VIEW 1 COMPLETE")
         else:
+            print("RENDER VIEW 2")
             resp = client.get(path)
+            print("RENDER VIEW 2 COMPLETE")
         if resp.status_code != 200:
-            raise Exception
+            print("NON 200")
+            raise Exception(resp.content)
         if needs_ext:
             mime = resp['Content-Type']
             mime = mime.split(';', 1)[0]
@@ -57,6 +64,13 @@ def _disk_render_path(args):
         print(outpath)
         with open(outpath, 'wb') as f:
             f.write(resp.content)
+    except Exception, e:
+        if settings.MEDUSA_LOG:
+            with open(settings.MEDUSA_LOG, 'a') as logfile:
+                logfile.write('#################\n')
+                print(e)
+                logfile.write(str(e))
+                logfile.write('\n')
 
 
 class DiskStaticSiteRenderer(BaseStaticSiteRenderer):
