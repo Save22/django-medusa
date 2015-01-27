@@ -79,7 +79,7 @@ def _s3_render_path(args):
                 logfile.write('#################\n')
                 logfile.write(str(e))
                 logfile.write('\n')
-        return None
+        return []
 
     # Default to "index.html" as the upload path if we're in a dir listing.
     outpath = path

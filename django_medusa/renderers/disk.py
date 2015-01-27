@@ -71,7 +71,7 @@ def _disk_render_path(args):
                 print(e)
                 logfile.write(str(e))
                 logfile.write('\n')
-        return None
+        return []
 
 
 class DiskStaticSiteRenderer(BaseStaticSiteRenderer):
