@@ -74,7 +74,7 @@ def _s3_render_path(args):
         if resp.status_code != 200:
             raise Exception(resp.content)
     except Exception, e:
-        if settings.MEDUSA_LOG:
+        if hasattr(settings, 'MEDUSA_LOG'):
             with open(settings.MEDUSA_LOG, 'a') as logfile:
                 logfile.write('#################\n')
                 logfile.write(str(e))
