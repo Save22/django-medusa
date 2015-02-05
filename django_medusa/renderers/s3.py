@@ -68,7 +68,7 @@ def _s3_render_path(args):
     # Render the view
     try:
         if hasattr(settings, 'MEDUSA_HTTP_HOST'):
-            resp = client.get(path, HTTP_HOST=settings.MEDUSA_HTTP_HOST)
+            resp = client.get(path, HTTP_HOST=settings.MEDUSA_HTTP_HOST, follow=True)
         else:
             resp = client.get(path)
         if resp.status_code != 200:

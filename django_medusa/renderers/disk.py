@@ -36,7 +36,7 @@ def _disk_render_path(args):
 
     try:
         if hasattr(settings, 'MEDUSA_HTTP_HOST'):
-            resp = client.get(path, HTTP_HOST=settings.MEDUSA_HTTP_HOST)
+            resp = client.get(path, HTTP_HOST=settings.MEDUSA_HTTP_HOST, follow=True)
         else:
             resp = client.get(path)
         if resp.status_code != 200:
