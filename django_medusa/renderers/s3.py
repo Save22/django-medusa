@@ -66,12 +66,20 @@ def _s3_render_path(args):
         bucket = _get_bucket()
 
     # Render the view
-    if hasattr(settings, 'MEDUSA_HTTP_HOST'):
-        resp = client.get(path, HTTP_HOST=settings.MEDUSA_HTTP_HOST)
-    else:
-        resp = client.get(path)
-    if resp.status_code != 200:
-        raise Exception
+    try:
+        if hasattr(settings, 'MEDUSA_HTTP_HOST'):
+            resp = client.get(path, HTTP_HOST=settings.MEDUSA_HTTP_HOST, follow=True)
+        else:
+            resp = client.get(path)
+        if resp.status_code != 200:
+            raise Exception(resp.content)
+    except Exception, e:
+        if hasattr(settings, 'MEDUSA_LOG'):
+            with open(settings.MEDUSA_LOG, 'a') as logfile:
+                logfile.write('#################\n')
+                logfile.write(str(e))
+                logfile.write('\n')
+        return []
 
     # Default to "index.html" as the upload path if we're in a dir listing.
     outpath = path
