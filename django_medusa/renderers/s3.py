@@ -58,7 +58,7 @@ def _upload_to_s3(key, file):
 # several processes via `multiprocessing`.
 # TODO: re-implement within the class if possible?
 def _s3_render_path(args):
-    client, bucket, path, view = args
+    client, bucket, path, view, host = args
     if not client:
         client = Client()
 
@@ -67,7 +67,9 @@ def _s3_render_path(args):
 
     # Render the view
     try:
-        if hasattr(settings, 'MEDUSA_HTTP_HOST'):
+        if host:
+            resp = client.get(path, HTTP_HOST=host, follow=True)
+        elif hasattr(settings, 'MEDUSA_HTTP_HOST'):
             resp = client.get(path, HTTP_HOST=settings.MEDUSA_HTTP_HOST, follow=True)
         else:
             resp = client.get(path)
@@ -132,10 +134,10 @@ class S3StaticSiteRenderer(BaseStaticSiteRenderer):
     def initialize_output(cls):
         cls.all_generated_paths = []
 
-    def render_path(self, path=None, view=None):
-        return _s3_render_path((self.client, self.bucket, path, view))
+    def render_path(self, path=None, view=None, host=None):
+        return _s3_render_path((self.client, self.bucket, path, view, host))
 
-    def generate(self):
+    def generate(self, medusa_host):
         from boto.s3.connection import S3Connection
 
         self.conn = S3Connection(
@@ -168,7 +170,7 @@ class S3StaticSiteRenderer(BaseStaticSiteRenderer):
             # Use standard, serial upload.
             self.client = Client()
             for path in self.paths:
-                self.generated_paths += self.render_path(path=path)
+                self.generated_paths += self.render_path(path=path, host=medusa_host)
 
         type(self).all_generated_paths += self.generated_paths
 

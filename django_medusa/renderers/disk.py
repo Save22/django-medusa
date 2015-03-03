@@ -12,7 +12,7 @@ __all__ = ('DiskStaticSiteRenderer', )
 # several processes via `multiprocessing`.
 # TODO: re-implement within the class if possible?
 def _disk_render_path(args):
-    client, path, view = args
+    client, path, view, host = args
     if not client:
         client = Client()
     if path:
@@ -35,7 +35,9 @@ def _disk_render_path(args):
         outpath = os.path.join(DEPLOY_DIR, realpath)
 
     try:
-        if hasattr(settings, 'MEDUSA_HTTP_HOST'):
+        if host:
+            resp = client.get(path, HTTP_HOST=host, follow=True)
+        elif hasattr(settings, 'MEDUSA_HTTP_HOST'):
             resp = client.get(path, HTTP_HOST=settings.MEDUSA_HTTP_HOST, follow=True)
         else:
             resp = client.get(path)
@@ -70,10 +72,10 @@ def _disk_render_path(args):
 
 class DiskStaticSiteRenderer(BaseStaticSiteRenderer):
 
-    def render_path(self, path=None, view=None):
-        _disk_render_path((self.client, path, view))
+    def render_path(self, path=None, view=None, host=None):
+        _disk_render_path((self.client, path, view, host))
 
-    def generate(self):
+    def generate(self, medusa_host):
         if getattr(settings, "MEDUSA_MULTITHREAD", False):
             # Upload up to ten items at once via `multiprocessing`.
             from multiprocessing import Pool, cpu_count
@@ -92,4 +94,4 @@ class DiskStaticSiteRenderer(BaseStaticSiteRenderer):
             # Use standard, serial upload.
             self.client = Client()
             for path in self.paths:
-                self.render_path(path=path)
+                self.render_path(path=path, host=medusa_host)
