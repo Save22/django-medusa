@@ -75,7 +75,7 @@ class DiskStaticSiteRenderer(BaseStaticSiteRenderer):
     def render_path(self, path=None, view=None, host=None):
         _disk_render_path((self.client, path, view, host))
 
-    def generate(self, medusa_host):
+    def generate(self, options):
         if getattr(settings, "MEDUSA_MULTITHREAD", False):
             # Upload up to ten items at once via `multiprocessing`.
             from multiprocessing import Pool, cpu_count
@@ -94,4 +94,4 @@ class DiskStaticSiteRenderer(BaseStaticSiteRenderer):
             # Use standard, serial upload.
             self.client = Client()
             for path in self.paths:
-                self.render_path(path=path, host=medusa_host)
+                self.render_path(path=path, host=options['medusa_host'])

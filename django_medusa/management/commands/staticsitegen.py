@@ -13,6 +13,11 @@ class Command(BaseCommand):
             dest='medusa_host',
             default=None,
             help='Specify custom target host for Medusa'),
+        make_option('--bucket',
+            action='store',
+            dest='s3_bucket',
+            default=None,
+            help='Specify AWS storage bucket for S3 renderer'),
     )
 
     help = 'Looks for \'renderers.py\' in each INSTALLED_APP, which defines '\
@@ -23,6 +28,6 @@ class Command(BaseCommand):
 
         for Renderer in get_static_renderers():
             r = Renderer()
-            r.generate(options['medusa_host'])
+            r.generate(options)
 
         StaticSiteRenderer.finalize_output()

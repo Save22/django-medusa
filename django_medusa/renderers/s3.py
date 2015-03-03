@@ -30,14 +30,15 @@ def _get_distribution():
         return None
 
 
-def _get_bucket():
+def _get_bucket(bucket_name=None):
     from boto.s3.connection import S3Connection
     conn = S3Connection(
         aws_access_key_id=settings.AWS_ACCESS_KEY,
         aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
     )
-    bucket = (settings.MEDUSA_AWS_STORAGE_BUCKET_NAME if settings.MEDUSA_AWS_STORAGE_BUCKET_NAME else settings.AWS_STORAGE_BUCKET_NAME)
-    return conn.get_bucket(bucket)
+    if not bucket_name:
+        bucket_name = (settings.MEDUSA_AWS_STORAGE_BUCKET_NAME if settings.MEDUSA_AWS_STORAGE_BUCKET_NAME else settings.AWS_STORAGE_BUCKET_NAME)
+    return conn.get_bucket(bucket_name)
 
 
 def _upload_to_s3(key, file):
@@ -137,14 +138,20 @@ class S3StaticSiteRenderer(BaseStaticSiteRenderer):
     def render_path(self, path=None, view=None, host=None):
         return _s3_render_path((self.client, self.bucket, path, view, host))
 
-    def generate(self, medusa_host):
+    def generate(self, options):
         from boto.s3.connection import S3Connection
 
         self.conn = S3Connection(
             aws_access_key_id=settings.AWS_ACCESS_KEY,
             aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
         )
-        self.bucket = (self.conn.get_bucket(settings.MEDUSA_AWS_STORAGE_BUCKET_NAME) if settings.MEDUSA_AWS_STORAGE_BUCKET_NAME else self.conn.get_bucket(settings.AWS_STORAGE_BUCKET_NAME))
+        if 'medusa_bucket' in options:
+            bucket_name = options['medusa_bucket']
+        elif settings.MEDUSA_AWS_STORAGE_BUCKET_NAME:
+            bucket_name = settings.MEDUSA_AWS_STORAGE_BUCKET_NAME
+        else:
+            bucket_name = settings.AWS_STORAGE_BUCKET_NAME
+        self.bucket = (self.conn.get_bucket(bucket_name))
         self.bucket.configure_website("index.html", "500.html")
         self.server_root_path = self.bucket.get_website_endpoint()
 
@@ -170,7 +177,9 @@ class S3StaticSiteRenderer(BaseStaticSiteRenderer):
             # Use standard, serial upload.
             self.client = Client()
             for path in self.paths:
-                self.generated_paths += self.render_path(path=path, host=medusa_host)
+                self.generated_paths += self.render_path(
+                    path=path,
+                    host=options['medusa_host'])
 
         type(self).all_generated_paths += self.generated_paths
 
