@@ -145,8 +145,8 @@ class S3StaticSiteRenderer(BaseStaticSiteRenderer):
             aws_access_key_id=settings.AWS_ACCESS_KEY,
             aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
         )
-        if 'medusa_bucket' in options:
-            bucket_name = options['medusa_bucket']
+        if 's3_bucket' in options:
+            bucket_name = options['s3_bucket']
         elif settings.MEDUSA_AWS_STORAGE_BUCKET_NAME:
             bucket_name = settings.MEDUSA_AWS_STORAGE_BUCKET_NAME
         else:
