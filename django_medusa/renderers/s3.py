@@ -145,7 +145,7 @@ class S3StaticSiteRenderer(BaseStaticSiteRenderer):
             aws_access_key_id=settings.AWS_ACCESS_KEY,
             aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
         )
-        if 's3_bucket' in options:
+        if 's3_bucket' in options and options['s3_bucket']:
             bucket_name = options['s3_bucket']
         elif settings.MEDUSA_AWS_STORAGE_BUCKET_NAME:
             bucket_name = settings.MEDUSA_AWS_STORAGE_BUCKET_NAME
@@ -176,10 +176,17 @@ class S3StaticSiteRenderer(BaseStaticSiteRenderer):
         else:
             # Use standard, serial upload.
             self.client = Client()
+            if options['medusa_host']:
+                host = options['medusa_host']
+            elif hasattr(settings, 'MEDUSA_HTTP_HOST'):
+                host = settings.MEDUSA_HTTP_HOST
+            else:
+                host = None
+            self.host = host
             for path in self.paths:
                 self.generated_paths += self.render_path(
                     path=path,
-                    host=options['medusa_host'])
+                    host=host)
 
         type(self).all_generated_paths += self.generated_paths
 

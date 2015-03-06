@@ -23,6 +23,9 @@ class BaseStaticSiteRenderer(object):
     through the Django testclient.
     """
 
+    def __init__(self):
+        self._host = None
+
     @classmethod
     def initialize_output(cls):
         """
@@ -67,3 +70,12 @@ class BaseStaticSiteRenderer(object):
     def generate(self):
         for path in self.paths:
             self.render_path(path)
+
+    @property
+    def host(self):
+        return self._host
+
+    @host.setter
+    def host(self, value):
+        self._host = value
+

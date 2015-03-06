@@ -93,5 +93,13 @@ class DiskStaticSiteRenderer(BaseStaticSiteRenderer):
         else:
             # Use standard, serial upload.
             self.client = Client()
+            if options['medusa_host']:
+                host = options['medusa_host']
+            elif hasattr(settings, 'MEDUSA_HTTP_HOST'):
+                host = settings.MEDUSA_HTTP_HOST
+            else:
+                host = None
+            self.host = host
             for path in self.paths:
                 self.render_path(path=path, host=options['medusa_host'])
+
