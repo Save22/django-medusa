@@ -11,7 +11,7 @@ __all__ = ('DiskStaticSiteRenderer', )
 # Unfortunately split out from the class at the moment to allow rendering with
 # several processes via `multiprocessing`.
 # TODO: re-implement within the class if possible?
-def _disk_render_path(args):
+def _disk_render_path(args, bucket=None):
     client, path, view, host = args
     if not client:
         client = Client()
@@ -26,13 +26,24 @@ def _disk_render_path(args):
         else:
             needs_ext = False
 
-        output_dir = os.path.abspath(os.path.join(
-            DEPLOY_DIR,
-            os.path.dirname(realpath)
-        ))
+        if bucket:
+            output_dir = os.path.abspath(os.path.join(
+                DEPLOY_DIR,
+                bucket,
+                os.path.dirname(realpath)
+            ))
+        else:
+            output_dir = os.path.abspath(os.path.join(
+                DEPLOY_DIR,
+                os.path.dirname(realpath)
+            ))
+
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
-        outpath = os.path.join(DEPLOY_DIR, realpath)
+        if bucket:
+            outpath = os.path.join(DEPLOY_DIR, bucket, realpath)
+        else:
+            outpath = os.path.join(DEPLOY_DIR, realpath)
 
     try:
         if host:
@@ -72,8 +83,8 @@ def _disk_render_path(args):
 
 class DiskStaticSiteRenderer(BaseStaticSiteRenderer):
 
-    def render_path(self, path=None, view=None, host=None):
-        _disk_render_path((self.client, path, view, host))
+    def render_path(self, path=None, view=None, host=None, bucket=None):
+        _disk_render_path((self.client, path, view, host), bucket=bucket)
 
     def generate(self, options):
         if getattr(settings, "MEDUSA_MULTITHREAD", False):
@@ -101,5 +112,4 @@ class DiskStaticSiteRenderer(BaseStaticSiteRenderer):
                 host = None
             self.host = host
             for path in self.paths:
-                self.render_path(path=path, host=options['medusa_host'])
-
+                self.render_path(path=path, host=options['medusa_host'], bucket=options['s3_bucket'])
